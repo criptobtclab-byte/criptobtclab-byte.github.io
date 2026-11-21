@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRIPTO BTC LAB · Entrando…</title>
+<meta name="description" content="Plataforma privada de monitoreo de bots Spot Grid de CRIPTO BTC LAB.">
+<meta name="theme-color" content="#070c16">
+
+<!-- Vista previa al compartir (WhatsApp/Telegram). CAMBIA "criptobtclab-byte" por tu usuario de GitHub (2 veces) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="CRIPTO BTC LAB">
+<meta property="og:description" content="Plataforma privada de monitoreo de bots Spot Grid. Entra con tu cuenta.">
+<meta property="og:image" content="https://criptobtclab-byte.github.io/logo.png">
+<meta property="og:url" content="https://criptobtclab-byte.github.io/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="logo.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#070c16; --text:#e8eef9; --muted:#8a99b5; --gold:#f5b042; --line:#1f2d48; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: grid; place-items: center; padding: 24px;
+    font: 16px/1.55 "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--text);
+    background:
+      repeating-linear-gradient(180deg, transparent 0 47px, rgba(245,176,66,.08) 47px 48px),
+      radial-gradient(900px 500px at 50% 0%, rgba(245,176,66,.14), transparent 60%), var(--bg);
+    animation: drift 14s linear infinite;
+  }
+  @keyframes drift { from { background-position: 0 0, 0 0, 0 0; } to { background-position: 0 48px, 0 0, 0 0; } }
+  @keyframes up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+  @keyframes barra { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+  @keyframes pulso { 0%, 100% { box-shadow: 0 0 40px rgba(245,176,66,.18); } 50% { box-shadow: 0 0 80px rgba(245,176,66,.38); } }
+  main { width: 100%; max-width: 440px; text-align: center; display: grid; gap: 18px; justify-items: center; }
+  main > * { animation: up .7s cubic-bezier(.2,.7,.2,1) both; }
+  main > *:nth-child(2) { animation-delay: .08s; } main > *:nth-child(3) { animation-delay: .16s; }
+  main > *:nth-child(4) { animation-delay: .24s; } main > *:nth-child(5) { animation-delay: .32s; }
+  .logo { width: min(240px, 62vw); height: auto; border-radius: 22px; animation: up .7s both, pulso 2.4s ease-in-out infinite; }
+  h1 { margin: 6px 0 0; font-size: clamp(1.7rem, 6vw, 2.2rem); font-weight: 800; letter-spacing: -.02em; }
+  p { margin: 0; color: var(--muted); }
+  .carga { width: 100%; height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+  .carga i { display: block; width: 40%; height: 100%; border-radius: 99px; background: var(--gold); animation: barra 1.4s ease-in-out infinite; }
+  #estado { font-weight: 600; color: var(--text); }
+  .btn { display: block; width: 100%; padding: 15px 22px; border-radius: 14px; background: var(--gold); color: #2a1c05;
+    font-weight: 800; text-decoration: none; transition: transform .2s, box-shadow .2s; }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(245,176,66,.35); }
+  .oculto { display: none; }
+  small { color: var(--muted); font-size: .8rem; }
+  @media (prefers-reduced-motion: reduce) { *, body { animation: none !important; } }
+</style>
+</head>
+<body>
+<main>
+  <img class="logo" src="logo.png" alt="CRIPTO BTC LAB">
+  <h1>CRIPTO BTC LAB</h1>
+  <p>Plataforma privada de monitoreo de bots Spot Grid.</p>
+  <div class="carga" aria-hidden="true"><i></i></div>
+  <div style="display:grid;gap:12px;width:100%">
+    <span id="estado">Conectando con la plataforma…</span>
+    <a class="btn oculto" id="entrar" href="#">Entrar ahora</a>
+    <small>La primera conexión del día puede tardar hasta un minuto.</small>
+  </div>
+</main>
+
+<script>
+  // >>> Dirección de tu plataforma en Render (no cambia) <<<
+  var DESTINO = "https://cripto-btc-lab.onrender.com";
+
+  (function () {
+    var base = DESTINO.replace(/\/+$/, "");
+    var params = new URLSearchParams(location.search);
+    var ruta = params.get("ir") === "registro" ? "/registro" : "/login";
+    var estado = document.getElementById("estado");
+    var btn = document.getElementById("entrar");
+    btn.href = base + ruta;
+    var t0 = Date.now();
+
+    function entrar() {
+      estado.textContent = "¡Listo! Entrando…";
+      location.replace(base + ruta);
+    }
+    function reintentar() {
+      var seg = Math.round((Date.now() - t0) / 1000);
+      estado.textContent = "Despertando la plataforma… " + seg + " s";
+      if (seg > 20) btn.classList.remove("oculto");
+      setTimeout(probar, 2500);
+    }
+    function probar() {
+      var ctl = new AbortController();
+      var corte = setTimeout(function () { ctl.abort(); }, 8000);
+      fetch(base + "/salud?t=" + Date.now(), { mode: "cors", cache: "no-store", signal: ctl.signal })
+        .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+        .then(function (t) { clearTimeout(corte); if (t.trim() === "ok") entrar(); else reintentar(); })
+        .catch(function () { clearTimeout(corte); reintentar(); });
+    }
+    probar();
+  })();
+</script>
+</body>
+</html>
